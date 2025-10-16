@@ -2,9 +2,9 @@ pipeline {
   agent any
 
   environment {
-    APP_HOST = "204.236.175.242"                    // your app EC2 public IP
-    APP_SSH_CREDENTIALS = "app-ssh"                 // Jenkins SSH credentials ID
-    SONAR_TOKEN = credentials('sonarqube-token')        // Jenkins secret text credential for SonarQube token
+    APP_HOST = "204.236.175.242"                     // your app EC2 public IP
+    APP_SSH_CREDENTIALS = "app-ssh"                  // Jenkins SSH credentials ID
+    SONAR_TOKEN = credentials('sonarqube-token')     // Jenkins secret text credential for SonarQube token
     SONAR_HOST_URL = "http://54.177.58.182:9000"    // SonarQube URL
     DOCKER_IMAGE = "demo-app:${env.BUILD_NUMBER}"
     DEP_CHECK_OUTPUT = "dependency-check-report"
@@ -46,22 +46,11 @@ pipeline {
         echo "Running static analysis with SonarQube..."
         withSonarQubeEnv('SonarQubeServer') {
           sh '''
-            if docker ps >/dev/null 2>&1; then
-              docker run --rm \
-                -v "$PWD":/usr/src \
-                sonarsource/sonar-scanner-cli \
-                -Dsonar.projectKey=demo-app \
-                -Dsonar.sources=/usr/src \
-                -Dsonar.host.url=${SONAR_HOST_URL} \
-                -Dsonar.login=${SONAR_TOKEN}
-            else
-              echo "Docker not available, trying local sonar-scanner..."
-              sonar-scanner \
-                -Dsonar.projectKey=demo-app \
-                -Dsonar.sources=. \
-                -Dsonar.host.url=${SONAR_HOST_URL} \
-                -Dsonar.login=${SONAR_TOKEN}
-            fi
+            sonar-scanner \
+              -Dsonar.projectKey=demo-app \
+              -Dsonar.sources=. \
+              -Dsonar.host.url=${SONAR_HOST_URL} \
+              -Dsonar.login=${SONAR_TOKEN}
           '''
         }
       }
@@ -92,7 +81,7 @@ pipeline {
       post {
         always {
           archiveArtifacts artifacts: "${DEP_CHECK_OUTPUT}/**", allowEmptyArchive: true
-          publishHTML (target: [
+          publishHTML(target: [
             reportName: 'Dependency Check Report',
             reportDir: "${DEP_CHECK_OUTPUT}",
             reportFiles: 'dependency-check-report.html',
@@ -172,7 +161,7 @@ pipeline {
       post {
         always {
           archiveArtifacts artifacts: 'zap_report.html', allowEmptyArchive: true
-          publishHTML (target: [
+          publishHTML(target: [
             reportName: 'ZAP Security Report',
             reportDir: '.',
             reportFiles: 'zap_report.html',
@@ -182,7 +171,7 @@ pipeline {
       }
     }
 
-  } // stages
+  }
 
   post {
     success {
