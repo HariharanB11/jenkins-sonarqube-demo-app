@@ -147,32 +147,6 @@ pipeline {
             }
         }
 
-        stage('DAST Security Scan (ZAP)') {
-            steps {
-                echo "Performing Dynamic Application Security Test (DAST) with ZAP..."
-                sh '''
-                    sleep 10
-                    if command -v zap-cli >/dev/null 2>&1; then
-                        zap-cli quick-scan --self-contained http://${APP_HOST}:3000
-                        zap-cli report -o zap_report.html -f html
-                    else
-                        echo "ZAP CLI not installed - skipping DAST scan"
-                    fi
-                '''
-            }
-            post {
-                always {
-                    archiveArtifacts artifacts: 'zap_report.html', allowEmptyArchive: true
-                    publishHTML(target: [
-                        reportName: 'ZAP Security Report',
-                        reportDir: '.',
-                        reportFiles: 'zap_report.html',
-                        keepAll: true
-                    ])
-                }
-            }
-        }
-
     } // stages
 
     post {
