@@ -19,7 +19,7 @@ pipeline {
 
     stage('Checkout') {
       steps {
-        checkout([$class: 'GitSCM', branches: [[name: '*/main']], userRemoteConfigs: [[url: 'https://github.com/HariharanB11/jenkins-sonarqube-demo-app', credentialsId: 'github-creds']]])
+        checkout([$class: 'GitSCM', branches: [[name: '*/main']], userRemoteConfigs: [[url: 'https://github.com/HariharanB11/jenkins-sonarqube-demo-app']]])
       }
     }
 
