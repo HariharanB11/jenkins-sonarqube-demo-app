@@ -2,9 +2,9 @@ pipeline {
     agent any
 
     environment {
-        APP_HOST = "204.236.175.242"                  // Your application EC2 public IP
+        APP_HOST = "204.236.175.242"                  // EC2 public IP
         APP_SSH_CREDENTIALS = "app-ssh"               // Jenkins SSH credentials ID
-        SONAR_TOKEN = credentials('sonarqube-token') // Jenkins secret text credential for SonarQube token
+        SONAR_TOKEN = credentials('sonarqube-token') // SonarQube token stored in Jenkins
         SONAR_HOST_URL = "http://54.177.58.182:9000" // SonarQube server URL
         DOCKER_IMAGE = "demo-app:${env.BUILD_NUMBER}"
         DEP_CHECK_OUTPUT = "dependency-check-report"
@@ -12,7 +12,7 @@ pipeline {
 
     options {
         skipDefaultCheckout(false)
-        timeout(time: 60, unit: 'MINUTES')
+        timeout(time: 90, unit: 'MINUTES')
     }
 
     stages {
@@ -52,7 +52,12 @@ pipeline {
                             -Dsonar.host.url=${SONAR_HOST_URL} \
                             -Dsonar.login=${SONAR_TOKEN}
                     else
-                        echo "sonar-scanner CLI not installed - skipping SonarQube scan"
+                        echo "sonar-scanner CLI not installed - attempting Docker scan..."
+                        docker run --rm -v "$PWD":/usr/src sonarsource/sonar-scanner-cli \
+                            -Dsonar.projectKey=demo-app \
+                            -Dsonar.sources=/usr/src \
+                            -Dsonar.host.url=${SONAR_HOST_URL} \
+                            -Dsonar.login=${SONAR_TOKEN}
                     fi
                 '''
             }
@@ -83,7 +88,7 @@ pipeline {
             post {
                 always {
                     archiveArtifacts artifacts: "${DEP_CHECK_OUTPUT}/**", allowEmptyArchive: true
-                    publishHTML (target: [
+                    publishHTML(target: [
                         reportName: 'Dependency Check Report',
                         reportDir: "${DEP_CHECK_OUTPUT}",
                         reportFiles: 'dependency-check-report.html',
