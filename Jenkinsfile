@@ -4,7 +4,7 @@ pipeline {
   environment {
     APP_HOST = "204.236.175.242"                    // your app EC2 public IP
     APP_SSH_CREDENTIALS = "app-ssh"                 // Jenkins SSH credentials ID
-    SONAR_TOKEN = credentials('sonar-token')        // Jenkins secret text credential for SonarQube token
+    SONAR_TOKEN = credentials('sonarqube-token')        // Jenkins secret text credential for SonarQube token
     SONAR_HOST_URL = "http://54.177.58.182:9000"    // SonarQube URL
     DOCKER_IMAGE = "demo-app:${env.BUILD_NUMBER}"
     DEP_CHECK_OUTPUT = "dependency-check-report"
